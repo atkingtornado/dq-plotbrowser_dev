@@ -1,0 +1,23 @@
+{
+  "name": "dq-plotbrowser",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "moment": "^2.22.2",
+    "react": "^16.4.1",
+    "react-burger-menu": "^2.5.2",
+    "react-custom-scrollbars": "^4.2.1",
+    "react-datepicker": "^1.5.0",
+    "react-dom": "^16.4.1",
+    "react-images": "^0.5.17",
+    "react-moment": "^0.7.7",
+    "react-scripts": "1.1.4",
+    "react-select": "^2.0.0-beta.6"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
