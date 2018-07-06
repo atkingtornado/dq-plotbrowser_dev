@@ -10,7 +10,6 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import './App.css';
 
 
-import test
 //Extend Select module to allow user to select "all"
 const Select = props => { 
   if (props.allowSelectAll) {
@@ -166,8 +165,8 @@ function genDummyPlotData(request){
               if(currLevel in dummyMenuData[currSite][currClass][currFacility]){
                 let plottypesData=[]
                 let dates = []
-                for (var m = moment(request.sdate); m.diff(request.edate, 'days') <= 0; m.add(1, 'days')) {
-                  dates.push(m.format('YYYYMMDD'));
+                for (var d = moment(request.sdate); d.diff(request.edate, 'days') <= 0; d.add(1, 'days')) {
+                  dates.push(d.format('YYYYMMDD'));
                 }
                 for(var m=0;m<request.plottypes.length;m++){
                   let currPlottype = request.plottypes[m]
@@ -553,6 +552,7 @@ class PlotSelectMenu extends Component {
             />
           </div>*/}
           <div style={{'paddingBottom': '20px',}}>
+            <i className="fas fa-info-circle tooltip"></i>
             <p className='menu-options-label'>SITE</p>
             <PlotSelectMenuOption
               name = 'site'

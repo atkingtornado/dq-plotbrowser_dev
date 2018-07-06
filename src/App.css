@@ -165,6 +165,7 @@ body {
 .menu-options-label{
   margin: 15px 0px 5px 0px;
   color: #fafafa;
+  display: inline-block;
 /*  font-size: 16px;*/
 }
 
