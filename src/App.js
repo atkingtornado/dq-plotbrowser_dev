@@ -11,6 +11,8 @@ import './App.css';
 import 'react-tippy/dist/tippy.css';
 import { Tooltip } from 'react-tippy';
 
+import queryString from 'query-string'
+
 
 
 //Extend Select module to allow user to select "all"
@@ -211,9 +213,6 @@ function uniqueArray(arrArg) {
   });
 };
 
-
-<Route path={`/`} component={App} />
-
 // Main
 class App extends Component {
   constructor(props){
@@ -224,6 +223,10 @@ class App extends Component {
     }
     this.handleDisplayChange = this.handleDisplayChange.bind(this);
     this.displayPlots = this.displayPlots.bind(this);
+  }
+
+  componentDidMount(){
+    console.log(this.props)
   }
 
   handleDisplayChange(e) {
@@ -252,6 +255,7 @@ class App extends Component {
             <PlotSelectMenu
               onDisplayChange = {this.handleDisplayChange}
               displayPlots    = {this.displayPlots}
+              queryString     = {queryString.parse(this.props.location.search)}
             />
 
           </div>
@@ -330,7 +334,7 @@ class PlotSelectMenu extends Component {
   }
 
   componentDidMount(){
-    console.log(this.props.location)
+    console.log(this.props)
     this.setState({
       sitePlaceholder: 'Select Site...',
       siteOptions: Object.keys(dummyMenuData).map((site, i) => ({ value: site, label: site })) ,
