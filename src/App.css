@@ -37,6 +37,18 @@ body {
   width: 75px;
 }
 
+.share{
+   position: fixed;
+   top:125px;
+   color: #fafafa;
+   left:22px;
+   cursor: pointer;
+}
+
+.share:hover{
+  color: #bababa;
+}
+
 *:focus {
     outline: none!important;
 }
@@ -129,7 +141,7 @@ body {
 .menu-header h1{
   margin: 0px;
   padding-left: 10px;
-  padding-top: 9px;
+  padding-top: 20px;
 }
 
 .menu-options{
@@ -169,6 +181,13 @@ body {
 /*  font-size: 16px;*/
 }
 
+.tooltip{
+  margin-left: 10px;
+  position: absolute;
+  top: 26px;
+  cursor: pointer;
+}
+
 #sdate-div{
   width: 45%;
   display: inline-block;
@@ -182,6 +201,7 @@ body {
 }
 
 .date-input{
+  text-align: center;
   height: 25px;
   border-radius: 5px;
   border: none;
@@ -286,6 +306,45 @@ input[type=radio].toggle:checked + label:after {
   color: #8c8c8c;
   background: #40474d;
 }
+
+.left-arrow{
+  float: left;
+  padding-left: 10px;
+  padding-right: 10px;
+  cursor: pointer;
+}
+.left-arrow p{
+  left: 10px;
+}
+
+.right-arrow{
+  padding-left: 10px;
+  float: right;
+  padding-right: 10px;
+  cursor: pointer;
+}
+
+.right-arrow p{
+  right: 10px;
+}
+
+.date-arrow-div{
+  color: #e6e6e6;
+  width: 100%;
+  margin-top: 25px;
+  display: inline-block;
+}
+
+.date-arrow-icon{
+  display: inline-block;
+}
+
+.date-arrow-text{
+  display: inline-block;
+  position: relative;
+  bottom: 6px;
+}
+
 .plot-area{
   height: 100%;
   padding: 0px 0px 0px 110px;

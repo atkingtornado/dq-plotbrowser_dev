@@ -8,6 +8,9 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Lightbox from 'react-images';
 import { Scrollbars } from 'react-custom-scrollbars';
 import './App.css';
+import 'react-tippy/dist/tippy.css';
+import { Tooltip } from 'react-tippy';
+
 
 
 //Extend Select module to allow user to select "all"
@@ -147,8 +150,15 @@ const testData = {
 }
 
 function genDummyPlotData(request){
-  console.log(request)
   let data = []
+  let dates = []
+  let start = request.sdate.clone()
+  let end = request.edate.clone()
+
+  for (var d = start; d.diff(end, 'days') <= 0; d.add(1, 'days')) {
+    dates.push(d.format('YYYYMMDD'));
+  }
+
   for(var i=0;i<request.sites.length;i++){
     let currSite = request.sites[i]
     for(var j=0;j<request.classes.length;j++){
@@ -164,13 +174,9 @@ function genDummyPlotData(request){
               //check if level exists for site + class + level
               if(currLevel in dummyMenuData[currSite][currClass][currFacility]){
                 let plottypesData=[]
-                let dates = []
-                for (var d = moment(request.sdate); d.diff(request.edate, 'days') <= 0; d.add(1, 'days')) {
-                  dates.push(d.format('YYYYMMDD'));
-                }
+
                 for(var m=0;m<request.plottypes.length;m++){
                   let currPlottype = request.plottypes[m]
-                  console.log('HERE', currPlottype)
                   //check if plottype exists for site + class + level + plottype
                   if(dummyMenuData[currSite][currClass][currFacility][currLevel].includes(currPlottype)){
                     plottypesData.push({
@@ -179,7 +185,7 @@ function genDummyPlotData(request){
                     })
                   }
                 }
-                console.log(plottypesData)
+                console.log(dates)
                 data.push({
                   'datastreamName': currSite+currClass+currFacility+'.'+currLevel,
                   'plotTypes':plottypesData
@@ -205,6 +211,8 @@ function uniqueArray(arrArg) {
   });
 };
 
+
+<Route path={`/`} component={App} />
 
 // Main
 class App extends Component {
@@ -249,7 +257,7 @@ class App extends Component {
           </div>
         </Menu>
         <div className='sidebar'>
-
+          <i className="fas fa-2x fa-share-alt share"></i>
         </div>
         <main id="page-wrap">
           
@@ -297,13 +305,15 @@ class PlotSelectMenu extends Component {
       getPlotsIsDisabled:     true,
       shiftKeyIsPressed:      false,
       closeOnSelect:          true,
+      showDateArrows:         false,
+      dateArrowNumDays:       1,
       sitePlaceholder:        '--',
       classPlaceholder:       '--',
       facilityPlaceholder:    '--',
       levelPlaceholder:       '--',
       plottypePlaceholder:    '--',
-      startDate:              moment(),
-      endDate:                moment(),
+      startDate:              moment().startOf('day'),
+      endDate:                moment().startOf('day'),
       plotRequestData:        '',
     };
     this.handleSiteChange       = this.handleSiteChange.bind(this);
@@ -314,11 +324,13 @@ class PlotSelectMenu extends Component {
     this.handleDateChange       = this.handleDateChange.bind(this);
     this.handleKeyDown          = this.handleKeyDown.bind(this);
     this.handleKeyUp            = this.handleKeyUp.bind(this);
+    this.handleDateArrowClick   = this.handleDateArrowClick.bind(this);
     this.updateMenu             = this.updateMenu.bind(this);
     this.getPlots               = this.getPlots.bind(this);
   }
 
   componentDidMount(){
+    console.log(this.props.location)
     this.setState({
       sitePlaceholder: 'Select Site...',
       siteOptions: Object.keys(dummyMenuData).map((site, i) => ({ value: site, label: site })) ,
@@ -381,6 +393,7 @@ class PlotSelectMenu extends Component {
     let facilityHasOptions = facilityOptions.length > 0
     let levelHasOptions    = levelOptions.length > 0
     let plottypeHasOptions = plottypeOptions.length > 0
+
 
     this.setState({
       selectedSites:          uniqueArray(newSites).map((siteStr, i) =>            ({ value: siteStr, label: siteStr })),
@@ -447,6 +460,7 @@ class PlotSelectMenu extends Component {
   }
 
   handleDateChange({startDate, endDate}){
+    console.log('DATE CHANGE')
     startDate = startDate || this.state.startDate
     endDate = endDate || this.state.endDate
 
@@ -463,10 +477,32 @@ class PlotSelectMenu extends Component {
         facilities: this.state.selectedFacilities.map((facilityObj, i) => (facilityObj.value)),
         levels: this.state.selectedLevels.map((levelObj, i) => (levelObj.value)),
         plottypes: this.state.selectedPlottypes.map((typeObj, i) => (typeObj.value)),
-        sdate: startDate,
-        edate: endDate,
+        sdate: startDate.startOf('day'),
+        edate: endDate.startOf('day'),
       }
     })
+  }
+
+  handleDateArrowClick(direction, numDays, e){
+    console.log(direction, numDays)
+    //d.add(1, 'days')
+
+    let newSdate = direction === 'left' ? this.state.startDate.clone().subtract(numDays, 'days') : this.state.startDate.clone().add(numDays, 'days')
+    let newEdate = direction === 'left' ? this.state.endDate.clone().subtract(numDays, 'days') : this.state.endDate.clone().add(numDays, 'days')
+
+    this.setState({ 
+      startDate: newSdate, 
+      endDate: newEdate,
+      plotRequestData: {
+        sites: this.state.selectedSites.map((siteObj, i) => (siteObj.value)),
+        classes: this.state.selectedClasses.map((classObj, i) => (classObj.value)),
+        facilities: this.state.selectedFacilities.map((facilityObj, i) => (facilityObj.value)),
+        levels: this.state.selectedLevels.map((levelObj, i) => (levelObj.value)),
+        plottypes: this.state.selectedPlottypes.map((typeObj, i) => (typeObj.value)),
+        sdate: newSdate.startOf('day'),
+        edate: newEdate.startOf('day'),
+      }
+    },this.getPlots)
   }
 
   handleKeyDown(e) {
@@ -491,52 +527,22 @@ class PlotSelectMenu extends Component {
   getPlots() {
     let data = genDummyPlotData(this.state.plotRequestData)
     this.props.displayPlots(data)
+    this.setState({
+      showDateArrows: true,
+      dateArrowNumDays: this.state.endDate.diff(this.state.startDate, 'days')+1
+    })
   }
 
-  genDummyPlotData(request){
-    console.log(request)
-    let data = []
-    for(var i=0;i<request.sites.length;i++){
-      let currSite = request.sites[i]
-      for(var j=0;j<request.classes.length;j++){
-        let currClass = request.classes[j]
-        //Check if class exists for site
-        if(currClass in dummyMenuData[currSite]){
-          for(var k=0;k<request.facilities.length;k++){
-            let currFacility = request.facilities[k]
-            //check if facility exists for site + class
-            if(currFacility in dummyMenuData[currSite][currClass]){
-              for(var l=0;l<request.levels.length;l++){
-                let currLevel = request.levels[l]
-                if(currLevel in dummyMenuData[currSite][currClass][currFacility]){
-                  let dates = []
-                  for (var m = moment(request.sdate); m.isBefore(request.edate); m.add(1, 'days')) {
-                    dates.push(m.format('YYYYMMDD'));
-                  }
-                  data.push({
-                    'datastreamName': currSite+currClass+currFacility+'.'+currLevel,
-                    'plotTypes':[
-                    {
-                      'plotType': 'plotType1',
-                      'data': dates.map((date, i) => ({ url: placeholderURL, date: date })),
-                    }]
-                  })
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-    return ''
-  }
 
   render() {
     return <div tabIndex="0" onKeyDown={this.handleKeyDown} onKeyUp={this.handleKeyUp} style={{height:'100%'}}>
     <div className='menu-header'>
-      <h1>Request Options</h1>
+      <h1 style={{display: 'inline-block'}}>Request Options</h1>
+      <Tooltip
+        title="Shift-Click to select <br>multiple options at once."
+        >
+        <i className="fas fa-info-circle fa-lg tooltip"></i>
+      </Tooltip>
     </div>
     <div className='menu-options-scroll'>
       <Scrollbars style={{ width: '100%', height: '100%'}} >
@@ -552,7 +558,6 @@ class PlotSelectMenu extends Component {
             />
           </div>*/}
           <div style={{'paddingBottom': '20px',}}>
-            <i className="fas fa-info-circle tooltip"></i>
             <p className='menu-options-label'>SITE</p>
             <PlotSelectMenuOption
               name = 'site'
@@ -631,6 +636,20 @@ class PlotSelectMenu extends Component {
             disabled = {this.state.getPlotsIsDisabled}
             onClick = {this.getPlots}
           />
+          { this.state.showDateArrows ?
+          <div className='date-arrow-div'>
+            <NextDateArrow
+              direction='left'
+              numDays={this.state.dateArrowNumDays}
+              onClick={this.handleDateArrowClick}
+            />
+            <NextDateArrow
+              direction='right'
+              numDays={this.state.dateArrowNumDays}
+              onClick={this.handleDateArrowClick}
+            />
+          </div>
+          : null}
         </div>
       </Scrollbars>
       </div>
@@ -660,8 +679,6 @@ class PlotSelectMenuOption extends Component {
 }
 
 class DateRange extends React.Component {
-
-  
 
   handleChangeStart = (startDate) => this.props.dateChange({ startDate })
   handleChangeEnd = (endDate) => this.props.dateChange({ endDate })
@@ -719,6 +736,22 @@ class GetPlotsButton extends React.Component {
   render(){
     return <div className='plot-menu-button-div'>
       <button disabled={this.props.disabled} onClick={this.props.onClick} className='plot-menu-button'>Get Plots</button>
+    </div>
+  }
+}
+
+class NextDateArrow extends React.Component {
+  render() {
+    let divClass  = this.props.direction + '-arrow'
+    let iconClass = "fa fa-arrow-circle-" + this.props.direction + " fa-2x date-arrow-icon"
+    let arrowText = this.props.direction === 'left' ? 'prev ' + this.props.numDays + ' days' : 'next ' + this.props.numDays + ' days'
+    if(this.props.numDays === 1){
+      arrowText = this.props.direction === 'left' ? 'prev day' : 'next day'
+    }
+
+    return <div onClick={(e) => this.props.onClick(this.props.direction, this.props.numDays, e)} className={divClass}>
+      {this.props.direction === 'left' ? <i className={iconClass} aria-hidden="true"></i> : <p className='date-arrow-text'>{arrowText}</p>}
+      {this.props.direction === 'left' ? <p className='date-arrow-text'>{arrowText}</p>   : <i className={iconClass} aria-hidden="true"></i>}
     </div>
   }
 }
