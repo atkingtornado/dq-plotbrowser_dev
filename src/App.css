@@ -37,6 +37,29 @@ body {
   width: 75px;
 }
 
+.share-overlay{
+  background: rgba(0,0,0,0.8)
+}
+
+.share-modal{
+  border-radius: 5px;
+}
+
+.share-close-button{
+  top: -30px;
+  right: -5px;
+}
+.share-close-button:hover{
+  cursor: pointer;
+}
+.share-close-icon{
+  fill:white;
+  width: 30px;
+  stroke: white;
+  stroke-width: 1px;
+  width: 25px;
+  height: 25px;
+}
 .share{
    position: fixed;
    top:125px;
@@ -49,10 +72,50 @@ body {
   color: #bababa;
 }
 
+.share-link-div{
+  box-sizing: border-box;
+  display: table;
+}
+
+.buttonInside{
+  width: 400px;
+  position:relative;
+  margin-bottom:10px;
+}
+
+.share-link-button{
+  color: #4e4e4e;
+  position: absolute;
+  right: 0px;
+  /* top: 4px; */
+  border: none;
+  height: 100%;
+  width: 30px;
+  /* border-radius: 100%; */
+  outline: none;
+  text-align: center;
+  font-weight: bold;
+  padding: 2px;
+  background: blue;
+  background-color: #eee;
+  background-image: linear-gradient(#fcfcfc,#eee);
+  border: 1px solid #d5d5d5;
+}
+
+.share-link-button:hover{
+  cursor:pointer;
+}
+
 .share-link{
-  width: 100%;
-  height: 30px;
-  border-radius: 5px;
+  height:25px;
+  width:calc(100% - 35px);
+  padding-left:10px;
+/*  border-radius: 4px;*/
+/*  border:none;outline:none;*/
+  border: 1px solid #ccc;
+    border-radius: 3px;
+    outline: 0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.075);
 }
 
 *:focus {

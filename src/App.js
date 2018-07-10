@@ -10,7 +10,9 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import './App.css';
 import 'react-tippy/dist/tippy.css';
 import { Tooltip } from 'react-tippy';
-import {ModalContainer, ModalDialog} from 'react-modal-dialog';
+import Clipboard from 'react-clipboard.js';
+
+import Modal from 'react-responsive-modal';
 
 import queryString from 'query-string'
 
@@ -306,13 +308,35 @@ class ShareButton extends Component{
   render(){
     return <div>
       <i onClick={this.handleClick} className="fas fa-2x fa-share-alt share"></i>
-      {this.state.isShowingModal &&
-      <ModalContainer onClose={this.handleClose}>
+        <Modal open={this.state.isShowingModal} onClose={this.handleClose} classNames={{ overlay: 'share-overlay', modal: 'share-modal', closeButton:'share-close-button', closeIcon:'share-close-icon'}} center>
+          <h3>Share Link</h3>
+          <div className="buttonInside">
+            <input className='share-link'/>
+
+            <Clipboard data-clipboard-text="I'll be copied" className='share-link-button'>
+              <i className="fa fa-clipboard fa-lg"></i>
+            </Clipboard>
+          </div>
+        </Modal>
+      {/* {this.state.isShowingModal &&
+     <ModalContainer onClose={this.handleClose}>
         <ModalDialog onClose={this.handleClose}>
           <h1>Share Link</h1>
-          <input className='share-link' name="shareLink"></input>
+          <div className='share-link-div'>
+            <input className='share-link'></input>
+             <Clipboard data-clipboard-text="I'll be copied" className='share-link-button'>
+              <i class="fas fa-clipboard fa-2x"></i>
+            </Clipboard>
+          </div>
+         <div className="buttonInside">
+            <input className='share-link'/>
+
+            <Clipboard data-clipboard-text="I'll be copied" className='share-link-button'>
+              <i className="fa fa-clipboard fa-lg"></i>
+            </Clipboard>
+          </div>
         </ModalDialog>
-      </ModalContainer>}
+      </ModalContainer>}*/}
     </div>
   }
 }
