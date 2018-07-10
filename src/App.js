@@ -225,13 +225,15 @@ class App extends Component {
     this.state = {
       plotData:    testData,
       displayType: 'thumb',
+      shareLink: '',
     }
     this.handleDisplayChange = this.handleDisplayChange.bind(this);
     this.displayPlots = this.displayPlots.bind(this);
+    this.updateShareLink = this.updateShareLink.bind(this)
   }
 
   componentDidMount(){
-    console.log(this.props)
+    // console.log(this.props)
   }
 
   handleDisplayChange(e) {
@@ -250,8 +252,45 @@ class App extends Component {
       plotData: data
     })
   }
+
+  updateShareLink(selectedOptions){
+    let newURL = window.location.protocol + '//' + window.location.host + '?'
+    for(let i=0; i<selectedOptions.sites.length;i++){
+      newURL = newURL + 's='+selectedOptions.sites[i]+'&'
+    }
+    for(let i=0; i<selectedOptions.classes.length;i++){
+      newURL = newURL + 'c='+selectedOptions.classes[i]+'&'
+    }
+    for(let i=0; i<selectedOptions.facilities.length;i++){
+      newURL = newURL + 'f='+selectedOptions.facilities[i]+'&'
+    }
+    for(let i=0; i<selectedOptions.levels.length;i++){
+      newURL = newURL + 'l='+selectedOptions.levels[i]+'&'
+    }
+    for(let i=0; i<selectedOptions.plottypes.length;i++){
+      newURL = newURL + 'p='+selectedOptions.plottypes[i]+'&'
+    }
+
+    newURL = newURL + 'sd='+selectedOptions.sdate.format('YYYYMMDD')+'&'
+    newURL = newURL + 'ed='+selectedOptions.edate.format('YYYYMMDD')+'&'
+
+    console.log(selectedOptions)
+
+    this.setState({
+      shareLink: newURL
+    })
+  }
   
   render () {
+
+    let queryStringObj = queryString.parse(this.props.location.search)
+    let hasQueryString = false
+
+    try{
+      hasQueryString = queryStringObj.s.length>0 && queryStringObj.c.length>0 && queryStringObj.f.length>0 && queryStringObj.l.length>0 && queryStringObj.p.length>0 && queryStringObj.sd !== "" && queryStringObj.ed !== "";
+    }
+    catch(e){}
+    
     return (
       <div id="outer-container">
         <Menu isOpen noOverlay pageWrapId={ "page-wrap" } outerContainerId={ "outer-container" }>
@@ -260,13 +299,15 @@ class App extends Component {
             <PlotSelectMenu
               onDisplayChange = {this.handleDisplayChange}
               displayPlots    = {this.displayPlots}
-              queryString     = {queryString.parse(this.props.location.search)}
+              queryString     = {queryStringObj}
+              hasQueryString  = {hasQueryString}
+              updateShareLink = {this.updateShareLink}
             />
 
           </div>
         </Menu>
         <div className='sidebar'>
-          <ShareButton/>
+          <ShareButton shareLink={this.state.shareLink}/>
         </div>
         <main id="page-wrap">
           
@@ -311,11 +352,21 @@ class ShareButton extends Component{
         <Modal open={this.state.isShowingModal} onClose={this.handleClose} classNames={{ overlay: 'share-overlay', modal: 'share-modal', closeButton:'share-close-button', closeIcon:'share-close-icon'}} center>
           <h3>Share Link</h3>
           <div className="buttonInside">
-            <input className='share-link'/>
+            <input readOnly value={this.props.shareLink} className='share-link'/>
 
-            <Clipboard data-clipboard-text="I'll be copied" className='share-link-button'>
-              <i className="fa fa-clipboard fa-lg"></i>
-            </Clipboard>
+
+              <Clipboard data-clipboard-text={this.props.shareLink} className='share-link-button'>
+                <Tooltip
+                title="Link Copied"
+                position="bottom"
+                trigger="click"
+                arrow="true"
+                duration='50'
+              >
+                <i className="fa fa-clipboard fa-lg"></i>
+                </Tooltip>
+              </Clipboard>
+            
           </div>
         </Modal>
       {/* {this.state.isShowingModal &&
@@ -345,6 +396,7 @@ class ShareButton extends Component{
 class PlotSelectMenu extends Component {
 
   constructor(props) {
+
     super(props);
     this.state = {
       selectedSites:          [],
@@ -395,18 +447,63 @@ class PlotSelectMenu extends Component {
   }
 
   componentDidMount(){
-    console.log(this.props)
-    this.setState({
-      sitePlaceholder: 'Select Site...',
-      siteOptions: Object.keys(dummyMenuData).map((site, i) => ({ value: site, label: site })) ,
-      siteIsDisabled: false,
-      siteAllowSelectAll: true,
-    })
+    console.log(this.props.hasQueryString)
+    if(this.props.hasQueryString){
+      let querySelectedSites      = Array.isArray(this.props.queryString.s) ? this.props.queryString.s.map((str, i) => ({ value: str, label: str })) : [this.props.queryString.s].map((str, i) => ({ value: str, label: str }))
+      let querySelectedClasses    = Array.isArray(this.props.queryString.c) ? this.props.queryString.c.map((str, i) => ({ value: str, label: str })) : [this.props.queryString.c].map((str, i) => ({ value: str, label: str }))
+      let querySelectedFacilities = Array.isArray(this.props.queryString.f) ? this.props.queryString.f.map((str, i) => ({ value: str, label: str })) : [this.props.queryString.f].map((str, i) => ({ value: str, label: str }))
+      let querySelectedLevels     = Array.isArray(this.props.queryString.l) ? this.props.queryString.l.map((str, i) => ({ value: str, label: str })) : [this.props.queryString.l].map((str, i) => ({ value: str, label: str }))
+      let querySelectedPlottypes  = Array.isArray(this.props.queryString.p) ? this.props.queryString.p.map((str, i) => ({ value: str, label: str })) : [this.props.queryString.p].map((str, i) => ({ value: str, label: str }))
+
+      console.log()
+
+      this.setState({
+        siteOptions: Object.keys(dummyMenuData).map((site, i) => ({ value: site, label: site })) ,
+        siteIsDisabled: false,
+        siteAllowSelectAll: true,
+        selectedSites: querySelectedSites,
+        startDate: moment(this.props.queryString.sd),
+        endDate: moment(this.props.queryString.ed),
+      },()=>{
+        this.updateMenu(querySelectedSites, 'site', 'queryadd')
+        this.setState({
+          selectedClasses: querySelectedClasses,
+        }, ()=>{
+          this.updateMenu(querySelectedClasses, 'class', 'queryadd')
+          this.setState({
+            selectedFacilities: querySelectedFacilities,
+          }, ()=>{
+            this.updateMenu(querySelectedFacilities, 'facility', 'queryadd')
+            this.setState({
+              selectedLevels: querySelectedLevels,
+            }, ()=>{
+              this.updateMenu(querySelectedLevels, 'level', 'queryadd')
+              this.setState({
+                selectedPlottypes: querySelectedPlottypes,
+              }, ()=>{
+                this.updateMenu(querySelectedPlottypes, 'plottype', 'queryadd', true)
+              })
+            })
+          })
+        })
+      })
+      // this.getPlots()
+    }
+    else{
+      this.setState({
+        sitePlaceholder: 'Select Site...',
+        siteOptions: Object.keys(dummyMenuData).map((site, i) => ({ value: site, label: site })) ,
+        siteIsDisabled: false,
+        siteAllowSelectAll: true,
+      })
+    }
+    
   }
 
-  updateMenu(selectedOptions, selectName, action){
+  updateMenu(selectedOptions, selectName, action, getPlots=false){
 
     let actionIsClear = action === 'clear' || action === 'remove-value'
+    let actionIsQuery = action === 'queryadd'
 
     let currSelectedSites      = (selectName === 'site')     ? selectedOptions.map((siteObj, i) => (siteObj.value))         : this.state.selectedSites.map((siteObj, i) => (siteObj.value))
     let currSelectedClasses    = (selectName === 'class')    ? selectedOptions.map((classObj, i) => (classObj.value))       : this.state.selectedClasses.map((classObj, i) => (classObj.value))
@@ -459,6 +556,17 @@ class PlotSelectMenu extends Component {
     let levelHasOptions    = levelOptions.length > 0
     let plottypeHasOptions = plottypeOptions.length > 0
 
+    let newPlotRequestData = {
+      sites: uniqueArray(newSites),
+      classes:  uniqueArray(newClasses),
+      facilities: uniqueArray(newFacilities),
+      levels: uniqueArray(newLevels),
+      plottypes: uniqueArray(newPlottypes),
+      sdate: this.state.startDate,
+      edate: this.state.endDate,
+    }
+
+    this.props.updateShareLink(newPlotRequestData)
 
     this.setState({
       selectedSites:          uniqueArray(newSites).map((siteStr, i) =>            ({ value: siteStr, label: siteStr })),
@@ -483,28 +591,22 @@ class PlotSelectMenu extends Component {
       levelPlaceholder:       levelHasOptions    ? 'Select Level...' : '--',  
       plottypePlaceholder:    plottypeHasOptions ? 'Select Plot Type...' : '--',  
       getPlotsIsDisabled:     uniqueArray(newPlottypes).length > 0   ? false : true,
-      plotRequestData: {
-        sites: uniqueArray(newSites),
-        classes:  uniqueArray(newClasses),
-        facilities: uniqueArray(newFacilities),
-        levels: uniqueArray(newLevels),
-        plottypes: uniqueArray(newPlottypes),
-        sdate: this.state.startDate,
-        edate: this.state.endDate,
-      },
+      plotRequestData: newPlotRequestData,
     }, () => {
-      if(!actionIsClear && facilityHasOptions && newFacilities.length === 0){
+      if(!actionIsQuery && !actionIsClear && facilityHasOptions && newFacilities.length === 0){
         this.updateMenu(facilityOptions.map((facilityStr, i) => ({ value: facilityStr, label: facilityStr })), 'facility')
       }
-      else if(!actionIsClear && levelHasOptions && newLevels.length === 0){
+      else if(!actionIsQuery && !actionIsClear && levelHasOptions && newLevels.length === 0){
         this.updateMenu(levelOptions.map((levelStr, i) => ({ value: levelStr, label: levelStr })), 'level')
       }
-      else if(!actionIsClear && plottypeHasOptions && newPlottypes.length === 0){
+      else if(!actionIsQuery && !actionIsClear && plottypeHasOptions && newPlottypes.length === 0){
         this.updateMenu(plottypeOptions.map((plottypeStr, i) => ({ value: plottypeStr, label: plottypeStr })), 'plottype')
       }
-    });
 
-    
+      if(getPlots){
+        this.getPlots()
+      }
+    });
 
   }
 
@@ -533,19 +635,23 @@ class PlotSelectMenu extends Component {
       endDate = startDate
     }
 
+    let newPlotRequestData = {
+      sites: this.state.selectedSites.map((siteObj, i) => (siteObj.value)),
+      classes: this.state.selectedClasses.map((classObj, i) => (classObj.value)),
+      facilities: this.state.selectedFacilities.map((facilityObj, i) => (facilityObj.value)),
+      levels: this.state.selectedLevels.map((levelObj, i) => (levelObj.value)),
+      plottypes: this.state.selectedPlottypes.map((typeObj, i) => (typeObj.value)),
+      sdate: startDate.startOf('day'),
+      edate: endDate.startOf('day'),
+    }
+
     this.setState({ 
       startDate: startDate, 
       endDate: endDate,
-      plotRequestData: {
-        sites: this.state.selectedSites.map((siteObj, i) => (siteObj.value)),
-        classes: this.state.selectedClasses.map((classObj, i) => (classObj.value)),
-        facilities: this.state.selectedFacilities.map((facilityObj, i) => (facilityObj.value)),
-        levels: this.state.selectedLevels.map((levelObj, i) => (levelObj.value)),
-        plottypes: this.state.selectedPlottypes.map((typeObj, i) => (typeObj.value)),
-        sdate: startDate.startOf('day'),
-        edate: endDate.startOf('day'),
-      }
+      plotRequestData: newPlotRequestData
     })
+
+    this.props.updateShareLink(newPlotRequestData)
   }
 
   handleDateArrowClick(direction, numDays, e){
@@ -555,19 +661,23 @@ class PlotSelectMenu extends Component {
     let newSdate = direction === 'left' ? this.state.startDate.clone().subtract(numDays, 'days') : this.state.startDate.clone().add(numDays, 'days')
     let newEdate = direction === 'left' ? this.state.endDate.clone().subtract(numDays, 'days') : this.state.endDate.clone().add(numDays, 'days')
 
+    let newPlotRequestData = {
+      sites: this.state.selectedSites.map((siteObj, i) => (siteObj.value)),
+      classes: this.state.selectedClasses.map((classObj, i) => (classObj.value)),
+      facilities: this.state.selectedFacilities.map((facilityObj, i) => (facilityObj.value)),
+      levels: this.state.selectedLevels.map((levelObj, i) => (levelObj.value)),
+      plottypes: this.state.selectedPlottypes.map((typeObj, i) => (typeObj.value)),
+      sdate: newSdate.startOf('day'),
+      edate: newEdate.startOf('day'),
+    }
+
     this.setState({ 
       startDate: newSdate, 
       endDate: newEdate,
-      plotRequestData: {
-        sites: this.state.selectedSites.map((siteObj, i) => (siteObj.value)),
-        classes: this.state.selectedClasses.map((classObj, i) => (classObj.value)),
-        facilities: this.state.selectedFacilities.map((facilityObj, i) => (facilityObj.value)),
-        levels: this.state.selectedLevels.map((levelObj, i) => (levelObj.value)),
-        plottypes: this.state.selectedPlottypes.map((typeObj, i) => (typeObj.value)),
-        sdate: newSdate.startOf('day'),
-        edate: newEdate.startOf('day'),
-      }
+      plotRequestData: newPlotRequestData
     },this.getPlots)
+
+    this.props.updateShareLink(newPlotRequestData)
   }
 
   handleKeyDown(e) {

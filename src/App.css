@@ -43,6 +43,7 @@ body {
 
 .share-modal{
   border-radius: 5px;
+  padding: 40px;
 }
 
 .share-close-button{
@@ -56,9 +57,9 @@ body {
   fill:white;
   width: 30px;
   stroke: white;
-  stroke-width: 1px;
-  width: 25px;
-  height: 25px;
+  stroke-width: 2px;
+  width: 23px;
+  height: 23px;
 }
 .share{
    position: fixed;
