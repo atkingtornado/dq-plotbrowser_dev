@@ -10,8 +10,11 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import './App.css';
 import 'react-tippy/dist/tippy.css';
 import { Tooltip } from 'react-tippy';
+import {ModalContainer, ModalDialog} from 'react-modal-dialog';
 
 import queryString from 'query-string'
+
+
 
 
 
@@ -261,7 +264,7 @@ class App extends Component {
           </div>
         </Menu>
         <div className='sidebar'>
-          <i className="fas fa-2x fa-share-alt share"></i>
+          <ShareButton/>
         </div>
         <main id="page-wrap">
           
@@ -277,6 +280,40 @@ class App extends Component {
         </main>
       </div>
     );
+  }
+}
+
+class ShareButton extends Component{
+  constructor(props){
+    super(props)
+
+    this.state = {
+      isShowingModal: false,
+    }
+
+    this.handleClick = this.handleClick.bind(this)
+    this.handleClose = this.handleClose.bind(this)
+  }
+
+  handleClick(){
+    this.setState({isShowingModal: true})
+  }
+
+  handleClose(){
+    this.setState({isShowingModal: false})
+  }
+
+  render(){
+    return <div>
+      <i onClick={this.handleClick} className="fas fa-2x fa-share-alt share"></i>
+      {this.state.isShowingModal &&
+      <ModalContainer onClose={this.handleClose}>
+        <ModalDialog onClose={this.handleClose}>
+          <h1>Share Link</h1>
+          <input className='share-link' name="shareLink"></input>
+        </ModalDialog>
+      </ModalContainer>}
+    </div>
   }
 }
 
