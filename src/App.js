@@ -254,7 +254,10 @@ class App extends Component {
   }
 
   updateShareLink(selectedOptions){
-    let newURL = window.location.protocol + '//' + window.location.host + '?'
+
+    console.log(window.location)
+
+    let newURL = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
     for(let i=0; i<selectedOptions.sites.length;i++){
       newURL = newURL + 's='+selectedOptions.sites[i]+'&'
     }
